@@ -14,17 +14,11 @@ async fn main() {
     let args: Vec<String> = env::args().collect();
 
     let sym = args[1].to_string();
-    let intrvl_sec = args[2].parse::<u64>().unwrap();
+    let step = args[2].parse::<usize>().unwrap();
     let concurrent_reqs = args[3].parse::<usize>().unwrap();
 
-    let end = 1313668800;
-
-    let mut timestamps = Vec::new();
-    let mut ts = now();
-    while ts > end {
-        ts -= intrvl_sec * 1000;
-        timestamps.push(ts);
-    }
+    let end = 1313668800; // TODO: fetch this value from the source API
+    let timestamps = (end..now()).step_by(step * 1000).collect::<Vec<u64>>();
 
     let client = Client::new();
     stream::iter(timestamps)
@@ -32,7 +26,7 @@ async fn main() {
             let client = client.clone();
             let base_url = format!("https://www.bitstamp.net/api/v2/ohlc/{}", sym);
             tokio::spawn(async move {
-                let query = format!("limit=1000&step={}&end={}", intrvl_sec, ts);
+                let query = format!("limit=1000&step={}&end={}", step, ts);
                 let url = format!("{}?{}", base_url, query);
                 println!("GET {}", url);
 
