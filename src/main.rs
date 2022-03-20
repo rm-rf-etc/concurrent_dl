@@ -1,7 +1,6 @@
 use futures::{stream, StreamExt};
 use reqwest::Client;
-use std::fs::write;
-use std::time::SystemTime;
+use std::{env, fs::write, time::SystemTime};
 
 fn now() -> u64 {
     SystemTime::now()
@@ -12,10 +11,13 @@ fn now() -> u64 {
 
 #[tokio::main]
 async fn main() {
+    let args: Vec<String> = env::args().collect();
+
+    let sym = args[1].to_string();
+    let intrvl_sec = args[2].parse::<u64>().unwrap();
+    let concurrent_reqs = args[3].parse::<usize>().unwrap();
+
     let end = 1313668800;
-    let intrvl_sec = 3600;
-    let concurrent_reqs = 20;
-    let sym = "btcusd";
 
     let mut timestamps = Vec::new();
     let mut ts = now();
